@@ -1,7 +1,7 @@
 const express = require("express");
 const app = express();
 const cors = require("cors");
-const { MongoClient, ServerApiVersion } = require("mongodb");
+const { MongoClient, ServerApiVersion, ObjectId } = require("mongodb");
 require("dotenv").config();
 const port = process.env.PORT || 5000;
 
@@ -26,7 +26,73 @@ const client = new MongoClient(uri, {
 async function run() {
   try {
     // Connect the client to the server	(optional starting in v4.7)
-    await client.connect();
+    // await client.connect();
+
+    //project start
+    const dbName = client.db("re-zanCharity");
+    const storyCollections = dbName.collection("story-collections");
+    const events = dbName.collection("eventsCollections");
+    const vlounters = dbName.collection("vlountertem-collentions");
+    const blogs = dbName.collection("blogsDatas");
+
+    ////////////////////////////////events part
+    //get data
+    app.get("/events", async (req, res) => {
+      const result = await events.find().toArray();
+      res.send(result);
+    });
+
+    //get single data
+    app.get("/events/:id", async (req, res) => {
+      const id = req.params.id;
+      const query = { _id: new ObjectId(id) };
+      const result = await events.findOne(query);
+      res.send(result);
+    });
+
+    //create events
+    app.post("/events", async (req, res) => {
+      const data = req.body;
+      const result = await events.insertOne(data);
+      res.send(result);
+    });
+
+    ////////////////////////////////blogs part
+    //get data
+    app.get("/blogs", async (req, res) => {
+      const result = await blogs.find().sort({ date: -1 }).toArray();
+      res.send(result);
+    });
+
+    //get single data
+    app.get("/blogs/:id", async (req, res) => {
+      const id = req.params.id;
+      const query = { _id: new ObjectId(id) };
+      const result = await blogs.findOne(query);
+      res.send(result);
+    });
+
+    ////////////////////////////////vlounters part
+    //get data
+    app.get("/vlounters", async (req, res) => {
+      const result = await vlounters.find().toArray();
+      res.send(result);
+    });
+
+    //create vlounteer
+    app.post("/vlounters", async (req, res) => {
+      const data = req.body;
+      const resutl = await vlounters.insertOne(data);
+      res.send(resutl);
+    });
+
+    /////////////////////////////////their story part
+    //get data
+    app.get("/stories", async (req, res) => {
+      const result = await storyCollections.find().toArray();
+      res.send(result);
+    });
+
     // Send a ping to confirm a successful connection
     await client.db("admin").command({ ping: 1 });
     console.log(
@@ -34,7 +100,7 @@ async function run() {
     );
   } finally {
     // Ensures that the client will close when you finish/error
-    await client.close();
+    // await client.close();
   }
 }
 run().catch(console.dir);
