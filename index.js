@@ -90,6 +90,38 @@ async function run() {
       res.send(result);
     });
 
+    //delete users
+    app.delete("/users/:id", async (req, res) => {
+      const id = req.params.id;
+      const filter = { _id: new ObjectId(id) };
+      const result = await users.deleteOne(filter);
+      res.send(result);
+    });
+
+    ////////////////////////////////////////donate part
+    //get user by their email
+    app.get("/users/:email", async (req, res) => {
+      const email = req.params.email;
+      const filter = { email: email };
+      const result = await users.findOne(filter);
+      res.send(result);
+    });
+
+    //donate
+    app.patch("/users/donated/:email", async (req, res) => {
+      const data = req.body;
+      const email = req.params.email;
+      const filter = { email: email };
+      const upDateData = {
+        $set: {
+          donation_amount: data.donation_amount,
+          message: data.message,
+        },
+      };
+      const result = await users.updateOne(filter, upDateData);
+      res.send(result);
+    });
+
     //////////////////////////////////////////events part
     //get data
     app.get("/events", async (req, res) => {
@@ -113,34 +145,22 @@ async function run() {
     });
 
     //update data
-    app.patch("/events/:id", async (req, res) => {
+    app.put("/events/:id", async (req, res) => {
       const id = req.params.id;
       const data = req.body;
       const filter = { _id: new ObjectId(id) };
+      const options = { upsert: true };
       const updetData = {
         $set: {
-          title: data?.title,
+          title: data.title,
           short_title: data.short_title,
           description: data.description,
           location: data.location,
           date: data.date,
-          image: data?.image,
+          image: data.image,
         },
       };
-      // if (data?.image) {
-      //   updateData.$set.image = data.image;
-      //   updateData.$set.short_title = data.short_title;
-      //   updateData.$set.description = data.description;
-      //   updateData.$set.location = data.location;
-      //   updateData.$set.date = data.date;
-      // } else {
-      //   updateData.$set.short_title = data.short_title;
-      //   updateData.$set.description = data.description;
-      //   updateData.$set.location = data.location;
-      //   updateData.$set.date = data.date;
-      // }
-
-      const result = await events.updateOne(filter, updetData);
+      const result = await events.updateOne(filter, updetData, options);
       res.send(result);
     });
 
@@ -220,6 +240,14 @@ async function run() {
         },
       };
       const result = await vlounters.updateOne(query, upData);
+      res.send(result);
+    });
+
+    //delete voluanteer
+    app.delete("/vlounters/:id", async (req, res) => {
+      const id = req.params.id;
+      const filter = { _id: new ObjectId(id) };
+      const result = await vlounters.deleteOne(filter);
       res.send(result);
     });
 
