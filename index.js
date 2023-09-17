@@ -3,6 +3,7 @@ const app = express();
 const cors = require("cors");
 const { MongoClient, ServerApiVersion, ObjectId } = require("mongodb");
 require("dotenv").config();
+const stripe = require("stripe")(process.env.Payment_Key);
 const port = process.env.PORT || 5000;
 
 //middleware
@@ -99,11 +100,29 @@ async function run() {
     });
 
     ////////////////////////////////////////donate part
+    //payment methods start
+    app.post("/create-payment-intent", async (req, res) => {
+      const { price } = req.body;
+      const amount = parseInt(price * 100);
+
+      // Create a PaymentIntent with the order amount and currency
+      const paymentIntent = await stripe.paymentIntents.create({
+        amount: amount,
+        currency: "usd",
+        payment_method_types: ["card"],
+      });
+
+      res.send({
+        clientSecret: paymentIntent.client_secret,
+      });
+    });
+    //////////////////////////////////////////////////////////////////////////////////////////////
     //get user by their email
     app.get("/users/:email", async (req, res) => {
       const email = req.params.email;
       const filter = { email: email };
       const result = await users.findOne(filter);
+      console.log(result);
       res.send(result);
     });
 
@@ -258,7 +277,7 @@ async function run() {
       res.send(result);
     });
 
-    //////project end
+    //////////////////////////////////////////////project end
     // Send a ping to confirm a successful connection
     await client.db("admin").command({ ping: 1 });
     console.log(
