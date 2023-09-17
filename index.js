@@ -36,6 +36,7 @@ async function run() {
     const vlounters = dbName.collection("vlountertem-collentions");
     const blogs = dbName.collection("blogsDatas");
     const users = dbName.collection("user-collection");
+    const payments = dbName.collection("payment-Collection");
 
     //////////////////////////////////////////////user part
     //get user
@@ -116,13 +117,25 @@ async function run() {
         clientSecret: paymentIntent.client_secret,
       });
     });
+
+    //payment data saved to the db
+    app.post("/payments", async (req, res) => {
+      const data = req.body;
+      const result = await payments.insertOne(data);
+      res.send(result);
+    });
+
+    //payment history from db
+    app.get("/payments/:email", async (req, res) => {
+      const result = await payments.find({ email: req.params.email }).toArray();
+      res.send(result);
+    });
     //////////////////////////////////////////////////////////////////////////////////////////////
     //get user by their email
     app.get("/users/:email", async (req, res) => {
       const email = req.params.email;
       const filter = { email: email };
       const result = await users.findOne(filter);
-      console.log(result);
       res.send(result);
     });
 
